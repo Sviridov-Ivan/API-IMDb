@@ -19,6 +19,7 @@ import com.example.apiimdb.ui.poster.PosterActivity
 import com.example.apiimdb.R
 import com.example.apiimdb.domain.models.Movie
 import com.example.apiimdb.presentation.movies.MoviesView
+import com.example.apiimdb.ui.movies.models.MoviesState
 
 class MoviesActivity : Activity(), MoviesView {
 
@@ -94,13 +95,22 @@ class MoviesActivity : Activity(), MoviesView {
         return current
     }
 
-    override fun showLoading() {
+    override fun render(state: MoviesState) {
+        when (state) {
+            is MoviesState.Loading -> showLoading()
+            is MoviesState.Content -> showContent(state.movies)
+            is MoviesState.Error -> showError(state.errorMessage)
+            is MoviesState.Empty -> showEmpty(state.message)
+        }
+    }
+
+    fun showLoading() {
         moviesList.visibility = View.GONE
         placeholderMessage.visibility = View.GONE
         progressBar.visibility = View.VISIBLE
     }
 
-    override fun showError(errorMessage: String) {
+    fun showError(errorMessage: String) {
         moviesList.visibility = View.GONE
         placeholderMessage.visibility = View.VISIBLE
         progressBar.visibility = View.GONE
@@ -108,11 +118,11 @@ class MoviesActivity : Activity(), MoviesView {
         placeholderMessage.text = errorMessage
     }
 
-    override fun showEmpty(emptyMessage: String) {
+    fun showEmpty(emptyMessage: String) {
         showError(emptyMessage)
     }
 
-    override fun showContent(movies: List<Movie>) {
+    fun showContent(movies: List<Movie>) {
         moviesList.visibility = View.VISIBLE
         placeholderMessage.visibility = View.GONE
         progressBar.visibility = View.GONE

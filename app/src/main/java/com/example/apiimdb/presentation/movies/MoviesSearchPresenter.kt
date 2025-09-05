@@ -17,6 +17,7 @@ import com.example.apiimdb.R
 import com.example.apiimdb.domain.api.MoviesInteractor
 import com.example.apiimdb.domain.models.Movie
 import com.example.apiimdb.ui.movies.MoviesAdapter
+import com.example.apiimdb.ui.movies.models.MoviesState
 import com.example.apiimdb.util.Creator
 
 class MoviesSearchPresenter(
@@ -48,42 +49,52 @@ class MoviesSearchPresenter(
 
     private fun searchRequest(newSearchText: String) {
         if (newSearchText.isNotEmpty()) {
-            // Заменили работу с элементами UI на
-            // вызовы методов интерфейса MoviesView
-            view.showLoading()
+            view.render(
+                MoviesState.Loading
+            )
 
-            moviesInteractor.searchMovies(
-                newSearchText,
-                object : MoviesInteractor.MoviesConsumer {
-                    override fun consume(foundMovies: List<Movie>?, errorMessage: String?) {
-                        handler.post {
+            moviesInteractor.searchMovies(newSearchText, object : MoviesInteractor.MoviesConsumer {
+                override fun consume(foundMovies: List<Movie>?, errorMessage: String?) {
+                    handler.post {
+                        if (foundMovies != null) {
+                            movies.clear()
+                            movies.addAll(foundMovies)
+                        }
 
-                            if (foundMovies != null) {
-                                movies.clear()
-                                movies.addAll(foundMovies)
+                        when {
+                            errorMessage != null -> {
+                                view.render(
+                                    MoviesState.Error(
+                                        errorMessage = context.getString(R.string.something_went_wrong),
+                                    )
+                                )
+                                view.showToast(errorMessage)
                             }
-                            when {
-                                errorMessage != null -> {
-                                    view.showError(context.getString(R.string.something_went_wrong))
-                                    view.showToast(errorMessage)
-                                }
 
-                                movies.isEmpty() -> {
-                                    view.showEmpty(context.getString(R.string.nothing_found))
-                                }
+                            movies.isEmpty() -> {
+                                view.render(
+                                    MoviesState.Empty(
+                                        message = context.getString(R.string.nothing_found),
+                                    )
+                                )
+                            }
 
-                                else -> {
-                                    view.showContent(movies)
-                                }
+                            else -> {
+                                view.render(
+                                    MoviesState.Content(
+                                        movies = movies,
+                                    )
+                                )
                             }
                         }
+
                     }
                 }
-            )
+            })
         }
     }
 
-    companion object {
+        companion object {
         private const val SEARCH_DEBOUNCE_DELAY = 2000L
         private val SEARCH_REQUEST_TOKEN = Any()
     }
