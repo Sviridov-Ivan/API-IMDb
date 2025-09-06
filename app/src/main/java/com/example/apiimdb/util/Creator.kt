@@ -21,8 +21,8 @@ object Creator {
             return MoviesInteractorImpl(getMoviesRepository(context)) // в котором будет использоваться репозиторий с характеристиками, описанными в методе выше
     }
 
-    fun provideMoviesSearchPresenter(moviesView: MoviesView, context: Context, adapter: MoviesAdapter): MoviesSearchPresenter {
-        return MoviesSearchPresenter(view = moviesView, context = context)
+    fun provideMoviesSearchPresenter(context: Context): MoviesSearchPresenter {
+        return MoviesSearchPresenter(context)
     }
 
     fun providePosterPresenter(posterView: PosterView, imageUrl: String): PosterPresenter {

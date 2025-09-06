@@ -29,7 +29,7 @@ class PosterActivity : Activity(), PosterView {
         posterPresenter = Creator.providePosterPresenter(this, imageUrl)
 
         setContentView(R.layout.activity_poster)
-        poster = findViewById(R.id.poster)
+        poster = findViewById(R.id.cover)
 
         posterPresenter.onCreate()
     }

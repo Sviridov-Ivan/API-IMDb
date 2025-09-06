@@ -18,10 +18,14 @@ import com.example.apiimdb.util.Creator
 import com.example.apiimdb.ui.poster.PosterActivity
 import com.example.apiimdb.R
 import com.example.apiimdb.domain.models.Movie
+import com.example.apiimdb.presentation.movies.MoviesSearchPresenter
 import com.example.apiimdb.presentation.movies.MoviesView
 import com.example.apiimdb.ui.movies.models.MoviesState
+import moxy.MvpActivity
+import moxy.presenter.InjectPresenter
+import moxy.presenter.ProvidePresenter
 
-class MoviesActivity : Activity(), MoviesView {
+class MoviesActivity : MvpActivity(), MoviesView {
 
     companion object {
         private const val CLICK_DEBOUNCE_DELAY = 1000L
@@ -32,21 +36,34 @@ class MoviesActivity : Activity(), MoviesView {
     private lateinit var moviesList: RecyclerView
     private lateinit var progressBar: ProgressBar
 
-    private val adapter = MoviesAdapter {
+    /*private val adapter = MoviesAdapter {
         if (clickDebounce()) {
             val intent = Intent(this, PosterActivity::class.java)
             intent.putExtra("poster", it.image)
             startActivity(intent)
         }
-    }
+    }*/
 
+    private val adapter = MoviesAdapter { movie ->
+        moviesSearchPresenter.onMovieClicked(movie)
+    }
     private var isClickAllowed = true
 
     private val handler = Handler(Looper.getMainLooper())
 
-    private val moviesSearchPresenter = Creator.provideMoviesSearchPresenter(this, context = this, adapter)
+    //private val moviesSearchPresenter = Creator.provideMoviesSearchPresenter(this, context = this, adapter)
 
     private var textWatcher: TextWatcher? = null
+
+    @InjectPresenter
+    lateinit var moviesSearchPresenter: MoviesSearchPresenter
+
+    @ProvidePresenter
+    fun providePresenter(): MoviesSearchPresenter {
+        return Creator.provideMoviesSearchPresenter(
+            context = applicationContext,
+        )
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -137,5 +154,10 @@ class MoviesActivity : Activity(), MoviesView {
 
     }
 
+    override fun openPoster(posterUrl: String) {
+        val intent = Intent(this, PosterActivity::class.java)
+        intent.putExtra("poster", posterUrl)
+        startActivity(intent)
+    }
 
 }
