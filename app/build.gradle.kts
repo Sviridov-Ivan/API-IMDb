@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    id("org.jetbrains.kotlin.kapt") // правильный способ
 }
 
 android {
@@ -50,6 +51,13 @@ dependencies {
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation ("com.google.android.material:material:1.6.1")
     implementation ("com.github.bumptech.glide:glide:4.14.2")
-    annotationProcessor ("com.github.bumptech.glide:compiler:4.14.2")
+    kapt ("com.github.bumptech.glide:compiler:4.14.2")
+
+    val moxyVersion = "2.2.2"
+    // Moxy
+    implementation ("com.github.moxy-community:moxy:$moxyVersion")
+    implementation ("com.github.moxy-community:moxy-android:$moxyVersion")
+    kapt ("com.github.moxy-community:moxy-compiler:$moxyVersion")
+
 
 }

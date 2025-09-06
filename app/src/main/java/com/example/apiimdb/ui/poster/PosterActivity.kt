@@ -2,6 +2,7 @@ package com.example.apiimdb.ui.poster
 
 import android.app.Activity
 import android.os.Bundle
+import android.widget.ImageView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -9,15 +10,34 @@ import androidx.core.view.WindowInsetsCompat
 import com.bumptech.glide.Glide
 import com.example.apiimdb.util.Creator
 import com.example.apiimdb.R
+import com.example.apiimdb.presentation.poster.PosterPresenter
+import com.example.apiimdb.presentation.poster.PosterView
 
-class PosterActivity : Activity() {
+class PosterActivity : Activity(), PosterView {
 
-    private val posterController = Creator.providePosterController(this)
+    private lateinit var posterPresenter: PosterPresenter
+
+    private lateinit var poster: ImageView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Мы не можем создать PosterPresenter раньше,
+        // потому что нам нужен imageUrl, который
+        // станет доступен только после super.onCreate
+        val imageUrl = intent.extras?.getString("poster", "") ?: ""
+        posterPresenter = Creator.providePosterPresenter(this, imageUrl)
+
         setContentView(R.layout.activity_poster)
-        posterController.onCreate()
+        poster = findViewById(R.id.cover)
+
+        posterPresenter.onCreate()
+    }
+
+    override fun setupPosterImage(url: String) {
+        Glide.with(applicationContext)
+            .load(url)
+            .into(poster)
     }
 }
 

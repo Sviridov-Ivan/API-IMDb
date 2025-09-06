@@ -1,0 +1,105 @@
+package com.example.apiimdb.presentation.movies
+
+import android.app.Activity
+import android.content.Context
+import android.os.Handler
+import android.os.Looper
+import android.text.Editable
+import android.text.TextWatcher
+import android.view.View
+import android.widget.EditText
+import android.widget.ProgressBar
+import android.widget.TextView
+import android.widget.Toast
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.example.apiimdb.R
+import com.example.apiimdb.domain.api.MoviesInteractor
+import com.example.apiimdb.domain.models.Movie
+import com.example.apiimdb.ui.movies.MoviesAdapter
+import com.example.apiimdb.ui.movies.models.MoviesState
+import com.example.apiimdb.util.Creator
+import moxy.MvpPresenter
+
+class MoviesSearchPresenter(
+    private val context: Context,
+    //private val adapter: MoviesAdapter
+) : MvpPresenter<MoviesView>() {
+
+    private val moviesInteractor = Creator.provideMoviesInteractor(context)
+    private val movies = ArrayList<Movie>()
+    private val handler = Handler(Looper.getMainLooper())
+    private var lastSearchText: String? = null
+
+    fun onMovieClicked(movie: Movie) {
+        viewState.openPoster(movie.image)
+    }
+
+    override fun onDestroy() {
+        handler.removeCallbacksAndMessages(SEARCH_REQUEST_TOKEN)
+    }
+
+    private val searchRunnable = Runnable {
+        val newSearchText = lastSearchText ?: ""
+        searchRequest(newSearchText)
+    }
+
+
+    fun searchDebounce(changedText: String) {
+        this.lastSearchText = changedText
+        handler.removeCallbacks(searchRunnable)
+        handler.postDelayed(searchRunnable, SEARCH_DEBOUNCE_DELAY)
+    }
+
+    private fun searchRequest(newSearchText: String) {
+        if (newSearchText.isNotEmpty()) {
+            viewState.render(
+                MoviesState.Loading
+            )
+
+            moviesInteractor.searchMovies(newSearchText, object : MoviesInteractor.MoviesConsumer {
+                override fun consume(foundMovies: List<Movie>?, errorMessage: String?) {
+                    handler.post {
+                        if (foundMovies != null) {
+                            movies.clear()
+                            movies.addAll(foundMovies)
+                        }
+
+                        when {
+                            errorMessage != null -> {
+                                viewState.render(
+                                    MoviesState.Error(
+                                        errorMessage = context.getString(R.string.something_went_wrong),
+                                    )
+                                )
+                                viewState.showToast(errorMessage)
+                            }
+
+                            movies.isEmpty() -> {
+                                viewState.render(
+                                    MoviesState.Empty(
+                                        message = context.getString(R.string.nothing_found),
+                                    )
+                                )
+                            }
+
+                            else -> {
+                                viewState.render(
+                                    MoviesState.Content(
+                                        movies = movies,
+                                    )
+                                )
+                            }
+                        }
+
+                    }
+                }
+            })
+        }
+    }
+
+        companion object {
+        private const val SEARCH_DEBOUNCE_DELAY = 2000L
+        private val SEARCH_REQUEST_TOKEN = Any()
+    }
+}
