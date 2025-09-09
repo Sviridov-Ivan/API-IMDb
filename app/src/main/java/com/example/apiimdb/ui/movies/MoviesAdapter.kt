@@ -10,7 +10,7 @@ class MoviesAdapter(val clickListener: MovieClickListener) : RecyclerView.Adapte
     var movies = ArrayList<Movie>()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MovieViewHolder =
-        MovieViewHolder(parent)
+        MovieViewHolder.from(parent)
 
     override fun onBindViewHolder(holder: MovieViewHolder, position: Int) {
         holder.bind(movies.get(position))

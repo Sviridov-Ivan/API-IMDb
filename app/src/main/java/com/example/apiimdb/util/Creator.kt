@@ -1,15 +1,11 @@
 package com.example.apiimdb.util
 
-import com.example.apiimdb.presentation.movies.MoviesSearchPresenter
 import android.content.Context
 import com.example.apiimdb.data.MoviesRepositoryImpl
 import com.example.apiimdb.data.network.RetrofitNetworkClient
 import com.example.apiimdb.domain.api.MoviesInteractor
 import com.example.apiimdb.domain.api.MoviesRepository
 import com.example.apiimdb.domain.impl.MoviesInteractorImpl
-import com.example.apiimdb.presentation.poster.PosterPresenter
-import com.example.apiimdb.presentation.movies.MoviesView
-import com.example.apiimdb.presentation.poster.PosterView
 import com.example.apiimdb.ui.movies.MoviesAdapter
 
 object Creator {
@@ -21,12 +17,12 @@ object Creator {
             return MoviesInteractorImpl(getMoviesRepository(context)) // в котором будет использоваться репозиторий с характеристиками, описанными в методе выше
     }
 
-    fun provideMoviesSearchPresenter(moviesView: MoviesView, context: Context, adapter: MoviesAdapter): MoviesSearchPresenter {
+    /*fun provideMoviesSearchPresenter(moviesView: MoviesView, context: Context, adapter: MoviesAdapter): MoviesSearchPresenter {
         return MoviesSearchPresenter(view = moviesView, context = context)
-    }
+    }*/
 
-    fun providePosterPresenter(posterView: PosterView, imageUrl: String): PosterPresenter {
+    /*fun providePosterPresenter(posterView: PosterView, imageUrl: String): PosterPresenter {
         return PosterPresenter(posterView, imageUrl)
-    }
+    }*/
 
 }

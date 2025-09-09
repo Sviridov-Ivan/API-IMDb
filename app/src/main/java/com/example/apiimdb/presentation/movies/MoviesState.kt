@@ -1,4 +1,4 @@
-package com.example.apiimdb.ui.movies.models
+package com.example.apiimdb.presentation.movies
 
 import com.example.apiimdb.domain.models.Movie
 

@@ -12,25 +12,26 @@ import android.widget.EditText
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.apiimdb.util.Creator
 import com.example.apiimdb.ui.poster.PosterActivity
 import com.example.apiimdb.R
+import com.example.apiimdb.databinding.ActivityMainBinding
 import com.example.apiimdb.domain.models.Movie
-import com.example.apiimdb.presentation.movies.MoviesView
-import com.example.apiimdb.ui.movies.models.MoviesState
+import com.example.apiimdb.presentation.movies.MoviesViewModel
+import com.example.apiimdb.presentation.movies.MoviesState
 
-class MoviesActivity : Activity(), MoviesView {
+class MoviesActivity : AppCompatActivity() {
 
     companion object {
         private const val CLICK_DEBOUNCE_DELAY = 1000L
     }
 
-    private lateinit var queryInput: EditText
-    private lateinit var placeholderMessage: TextView
-    private lateinit var moviesList: RecyclerView
-    private lateinit var progressBar: ProgressBar
+    private lateinit var binding: ActivityMainBinding // инициализация бандинга
+    private var viewModel: MoviesViewModel? = null
 
     private val adapter = MoviesAdapter {
         if (clickDebounce()) {
@@ -39,35 +40,48 @@ class MoviesActivity : Activity(), MoviesView {
             startActivity(intent)
         }
     }
-
     private var isClickAllowed = true
 
     private val handler = Handler(Looper.getMainLooper())
 
-    private val moviesSearchPresenter = Creator.provideMoviesSearchPresenter(this, context = this, adapter)
+    //private val moviesSearchPresenter = Creator.provideMoviesSearchPresenter(this, context = this, adapter)
 
     private var textWatcher: TextWatcher? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        //setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater) // подключение байндинга
+        setContentView(binding.root)
+
+
         //moviesSearchPresenter.onCreate()
 
+        binding.movies.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+        binding.movies.adapter = adapter
 
-        placeholderMessage = findViewById(R.id.placeholderMessage)
-        queryInput = findViewById(R.id.queryInput)
-        moviesList = findViewById(R.id.movies)
-        progressBar =findViewById(R.id.progressBar)
+        viewModel = ViewModelProvider(this, MoviesViewModel.getFactory())
+            .get(MoviesViewModel::class.java)
 
-        moviesList.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
-        moviesList.adapter = adapter
+        viewModel?.observeState()?.observe(this) {
+            render(it)
+        }
+
+        viewModel?.observeStateToast()?.observe(this) { message -> // ХЗ ПРАВИЛЬНО ИЛИ НЕТ
+            message?.let {
+                Toast.makeText(this, it, Toast.LENGTH_LONG).show()
+            }
+        }
+        /*viewModel?.observeStateToast()?.observe(this) {
+            showToast(it)
+        }*/
 
         textWatcher = object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
             }
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                moviesSearchPresenter.searchDebounce(
+                viewModel?.searchDebounce(
                     changedText = s?.toString() ?: ""
                 )
             }
@@ -75,7 +89,7 @@ class MoviesActivity : Activity(), MoviesView {
             override fun afterTextChanged(s: Editable?) {
             }
         }
-        textWatcher?.let { queryInput.addTextChangedListener(it) }
+        textWatcher?.let { binding.queryInput.addTextChangedListener(it) }
 
         //moviesSearchPresenter.onCreate()
 
@@ -83,7 +97,7 @@ class MoviesActivity : Activity(), MoviesView {
 
     override fun onDestroy() {
         super.onDestroy()
-        //moviesSearchPresenter.onDestroy()
+        textWatcher?.let { binding.queryInput.removeTextChangedListener(it) }//moviesSearchPresenter.onDestroy()
     }
 
     private fun clickDebounce() : Boolean {
@@ -95,7 +109,7 @@ class MoviesActivity : Activity(), MoviesView {
         return current
     }
 
-    override fun render(state: MoviesState) {
+    fun render(state: MoviesState) {
         when (state) {
             is MoviesState.Loading -> showLoading()
             is MoviesState.Content -> showContent(state.movies)
@@ -104,35 +118,42 @@ class MoviesActivity : Activity(), MoviesView {
         }
     }
 
-    fun showLoading() {
-        moviesList.visibility = View.GONE
-        placeholderMessage.visibility = View.GONE
-        progressBar.visibility = View.VISIBLE
+    fun showLoading() { // групповой использование байндинг
+        binding.apply {
+            movies.visibility = View.GONE
+            placeholderMessage.visibility = View.GONE
+            progressBar.visibility = View.VISIBLE
+        }
+
     }
 
     fun showError(errorMessage: String) {
-        moviesList.visibility = View.GONE
-        placeholderMessage.visibility = View.VISIBLE
-        progressBar.visibility = View.GONE
+        binding.apply {
+            movies.visibility = View.GONE
+            placeholderMessage.visibility = View.VISIBLE
+            progressBar.visibility = View.GONE
 
-        placeholderMessage.text = errorMessage
+            placeholderMessage.text = errorMessage
+        }
+
     }
 
     fun showEmpty(emptyMessage: String) {
         showError(emptyMessage)
     }
 
-    fun showContent(movies: List<Movie>) {
-        moviesList.visibility = View.VISIBLE
-        placeholderMessage.visibility = View.GONE
-        progressBar.visibility = View.GONE
-
+    fun showContent(moviesList: List<Movie>) {
+        binding.apply {
+            movies.visibility = View.VISIBLE
+            placeholderMessage.visibility = View.GONE
+            progressBar.visibility = View.GONE
+        }
         adapter.movies.clear()
-        adapter.movies.addAll(movies)
+        adapter.movies.addAll(moviesList)
         adapter.notifyDataSetChanged()
     }
 
-    override fun showToast(additionalMessage: String) {
+    fun showToast(additionalMessage: String) {
         Toast.makeText(this, additionalMessage, Toast.LENGTH_LONG).show()
 
     }
