@@ -9,8 +9,6 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 
 class PosterViewModel(private val posterUrl: String) : ViewModel() { // наследоваться от ViewModel.
 
-
-
     companion object {
         fun getFactory(url: String): ViewModelProvider.Factory = viewModelFactory { //функция getFactory() принимает в качестве параметра ссылку, которая передаётся в конструктор PosterViewModel.
             initializer {
@@ -18,7 +16,6 @@ class PosterViewModel(private val posterUrl: String) : ViewModel() { // насл
             }
         }
     }
-
     private val urlLiveData = MutableLiveData(posterUrl) // Добавим LiveData для хранения ссылки на постер:
     fun observeUrl(): LiveData<String> = urlLiveData
 }

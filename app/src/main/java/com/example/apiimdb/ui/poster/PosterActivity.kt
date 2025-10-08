@@ -16,9 +16,6 @@ import com.example.apiimdb.presentation.poster.PosterViewModel
 class PosterActivity : AppCompatActivity() {
 
     private var viewModel: PosterViewModel? = null
-
-    //private lateinit var posterPresenter: PosterPresenter
-
     private lateinit var poster: ImageView
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -37,33 +34,9 @@ class PosterActivity : AppCompatActivity() {
             setupPosterImage(it)
         }
     }
-
     fun setupPosterImage(url: String) {
         Glide.with(applicationContext)
             .load(url)
             .into(poster)
     }
 }
-
-
-/*class PosterActivity : AppCompatActivity() {
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        enableEdgeToEdge() // поддержка EdgeToEdge режима
-        setContentView(R.layout.activity_poster)
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.poster)) { v, insets -> // присваиваю id для головного layout в верстке
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
-
-        val posterUrl = intent.getStringExtra("poster")
-
-        Glide.with(this)
-            .load(posterUrl)
-            .into(findViewById(R.id.cover))
-
-    }
-}*/

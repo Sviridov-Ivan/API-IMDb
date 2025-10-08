@@ -3,6 +3,7 @@ package com.example.apiimdb.data.network
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
+import androidx.resourceinspection.annotation.Attribute
 import com.example.apiimdb.data.NetworkClient
 import com.example.apiimdb.data.dto.MovieDto
 import com.example.apiimdb.data.dto.MoviesSearchRequest
@@ -11,16 +12,16 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import kotlin.contracts.contract
 
-class RetrofitNetworkClient(private val context: Context) : NetworkClient {
-    private val imdbBaseUrl = "https://tv-api.com"
+class RetrofitNetworkClient(private val imdbService: IMDbApiService, private val context: Context) : NetworkClient {
+//    private val imdbBaseUrl = "https://tv-api.com"
+//
+//    private val retrofit =
+//        Retrofit.Builder() // инициализируем экземпляр Retrofit и сервис для выполнения запросов с использованием интерфейса IMDbApiService
+//            .baseUrl(imdbBaseUrl)
+//            .addConverterFactory(GsonConverterFactory.create())
+//            .build()
 
-    private val retrofit =
-        Retrofit.Builder() // инициализируем экземпляр Retrofit и сервис для выполнения запросов с использованием интерфейса IMDbApiService
-            .baseUrl(imdbBaseUrl)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-
-    private val imdbService = retrofit.create(IMDbApiService::class.java)
+    //private val imdbService = retrofit.create(IMDbApiService::class.java)
 
     override fun doRequest(dto: Any): Response {
         if (isConnected() == false) {

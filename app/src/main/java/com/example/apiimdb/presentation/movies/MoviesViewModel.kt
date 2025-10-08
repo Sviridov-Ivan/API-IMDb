@@ -1,9 +1,11 @@
 package com.example.apiimdb.presentation.movies
 
+import android.app.Application
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -18,8 +20,13 @@ import com.example.apiimdb.R
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
 import com.example.apiimdb.MoviesApplication
 
-class MoviesViewModel(private val context: Context): ViewModel() {
+class MoviesViewModel(
+    application: Application,
+    private val moviesInteractor: MoviesInteractor
+) : AndroidViewModel(application) {
 
+
+    private val context = application.applicationContext
     private val stateLiveData = MutableLiveData<MoviesState>()
     fun observeState(): LiveData<MoviesState> = stateLiveData
 
@@ -31,15 +38,15 @@ class MoviesViewModel(private val context: Context): ViewModel() {
             private const val SEARCH_DEBOUNCE_DELAY = 2000L
             private val SEARCH_REQUEST_TOKEN = Any()
 
-            fun getFactory(/*value: Int*/): ViewModelProvider.Factory = viewModelFactory { // фабрика, но сначала нужно создать класс мовис аппликейшн
-                initializer {
-                    val app = (this[APPLICATION_KEY] as MoviesApplication)
-                    MoviesViewModel(app.applicationContext)
-                }
-            }
+//            fun getFactory(/*value: Int*/): ViewModelProvider.Factory = viewModelFactory { // фабрика, но сначала нужно создать класс мовис аппликейшн
+//                initializer {
+//                    val app = (this[APPLICATION_KEY] as MoviesApplication)
+//                    MoviesViewModel(app.applicationContext)
+//                }
+//            }
         }
 
-        private val moviesInteractor = Creator.provideMoviesInteractor(context)
+        //private val moviesInteractor = Creator.provideMoviesInteractor(context)
 
         private var latestSearchText: String? = null
 

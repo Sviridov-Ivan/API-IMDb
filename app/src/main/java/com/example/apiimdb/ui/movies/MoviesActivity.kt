@@ -8,21 +8,15 @@ import android.os.Looper
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
-import android.widget.EditText
-import android.widget.ProgressBar
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.example.apiimdb.util.Creator
 import com.example.apiimdb.ui.poster.PosterActivity
-import com.example.apiimdb.R
 import com.example.apiimdb.databinding.ActivityMainBinding
 import com.example.apiimdb.domain.models.Movie
 import com.example.apiimdb.presentation.movies.MoviesViewModel
 import com.example.apiimdb.presentation.movies.MoviesState
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class MoviesActivity : AppCompatActivity() {
 
@@ -31,15 +25,10 @@ class MoviesActivity : AppCompatActivity() {
     }
 
     private lateinit var binding: ActivityMainBinding // инициализация бандинга
-    private var viewModel: MoviesViewModel? = null
+    private val viewModel: MoviesViewModel by viewModel()
+    //private var viewModel: MoviesViewModel? = null
 
-    private val adapter = MoviesAdapter {
-        if (clickDebounce()) {
-            val intent = Intent(this, PosterActivity::class.java)
-            intent.putExtra("poster", it.image)
-            startActivity(intent)
-        }
-    }
+    private val adapter = MoviesAdapter()
     private var isClickAllowed = true
 
     private val handler = Handler(Looper.getMainLooper())
@@ -60,21 +49,23 @@ class MoviesActivity : AppCompatActivity() {
         binding.movies.layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
         binding.movies.adapter = adapter
 
-        viewModel = ViewModelProvider(this, MoviesViewModel.getFactory())
-            .get(MoviesViewModel::class.java)
+        adapter.setOnClickListener { movie ->
+            if (clickDebounce()) {
+                val intent = Intent(this, PosterActivity::class.java)
+                intent.putExtra("poster", movie.image)
+                startActivity(intent)
+            }
+        }
 
-        viewModel?.observeState()?.observe(this) {
+        viewModel.observeState().observe(this) {
             render(it)
         }
 
-        viewModel?.observeStateToast()?.observe(this) { message -> // ХЗ ПРАВИЛЬНО ИЛИ НЕТ
+        viewModel.observeStateToast().observe(this) { message -> // ХЗ ПРАВИЛЬНО ИЛИ НЕТ
             message?.let {
                 Toast.makeText(this, it, Toast.LENGTH_LONG).show()
             }
         }
-        /*viewModel?.observeStateToast()?.observe(this) {
-            showToast(it)
-        }*/
 
         textWatcher = object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
