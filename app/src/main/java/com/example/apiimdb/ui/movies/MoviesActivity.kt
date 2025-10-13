@@ -1,6 +1,6 @@
 package com.example.apiimdb.ui.movies
 
-import android.app.Activity
+
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
@@ -11,11 +11,11 @@ import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.apiimdb.ui.poster.PosterActivity
 import com.example.apiimdb.databinding.ActivityMainBinding
 import com.example.apiimdb.domain.models.Movie
 import com.example.apiimdb.presentation.movies.MoviesViewModel
 import com.example.apiimdb.presentation.movies.MoviesState
+import com.example.apiimdb.ui.poster.DetailsActivity
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class MoviesActivity : AppCompatActivity() {
@@ -51,7 +51,8 @@ class MoviesActivity : AppCompatActivity() {
 
         adapter.setOnClickListener { movie ->
             if (clickDebounce()) {
-                val intent = Intent(this, PosterActivity::class.java)
+                val intent = Intent(this, DetailsActivity::class.java)
+                intent.putExtra("id", movie.id) // 🔹 тот же ключ, что и в DetailsActivity
                 intent.putExtra("poster", movie.image)
                 startActivity(intent)
             }
@@ -143,11 +144,5 @@ class MoviesActivity : AppCompatActivity() {
         adapter.movies.addAll(moviesList)
         adapter.notifyDataSetChanged()
     }
-
-    fun showToast(additionalMessage: String) {
-        Toast.makeText(this, additionalMessage, Toast.LENGTH_LONG).show()
-
-    }
-
 
 }
