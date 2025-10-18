@@ -3,11 +3,9 @@ package com.example.apiimdb.data.network
 import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
-import android.util.Log
-
 import com.example.apiimdb.data.NetworkClient
+import com.example.apiimdb.data.dto.MovieCastRequest
 import com.example.apiimdb.data.dto.MovieDetailsRequest
-
 import com.example.apiimdb.data.dto.MoviesSearchRequest
 import com.example.apiimdb.data.dto.Response
 
@@ -16,11 +14,34 @@ class RetrofitNetworkClient(private val imdbService: IMDbApiService, private val
 
     override fun doRequest(dto: Any): Response {
         if (isConnected() == false) {
-            Log.e("NetworkClient", "Нет подключения к интернету")
+            return Response().apply { resultCode = -1 }
+        }
+
+        // Добавили ещё одну проверку
+        if ((dto !is MoviesSearchRequest) && (dto !is MovieDetailsRequest) && (dto !is MovieCastRequest)) {
+            return Response().apply { resultCode = 400 }
+        }
+
+        // Добавили в выражение when ещё одну ветку
+        val response = when (dto) {
+            is MoviesSearchRequest -> imdbService.searchMovies(dto.expression).execute()
+            is MovieDetailsRequest -> imdbService.getMovieDetails(dto.movieId).execute()
+            else -> imdbService.getFullCast((dto as MovieCastRequest).movieId).execute()
+        }
+        val body = response.body()
+        return if (body != null) {
+            body.apply { resultCode = response.code() }
+        } else {
+            Response().apply { resultCode = response.code() }
+        }
+    }
+
+    
+    /*override fun doRequest(dto: Any): Response {
+        if (isConnected() == false) {
             return Response().apply { resultCode = -1 }
         }
         if ((dto !is MoviesSearchRequest) && (dto !is MovieDetailsRequest)) {
-            Log.e("NetworkClient", "Неверный тип запроса: ${dto::class.simpleName}")
             return Response().apply { resultCode = 400 }
         }
 
@@ -55,10 +76,10 @@ class RetrofitNetworkClient(private val imdbService: IMDbApiService, private val
         } else {
 
             val errorBody = response.errorBody()?.string()
-            Log.e("NetworkClient", "Ошибка: $errorBody")
+
             Response().apply { resultCode = response.code() }
         }
-    }
+    }*/
 
     /*override fun doRequest(dto: Any): Response {
         if (isConnected() == false) {

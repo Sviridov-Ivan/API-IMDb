@@ -1,6 +1,7 @@
 package com.example.apiimdb.domain.api
 
 import com.example.apiimdb.domain.models.Movie
+import com.example.apiimdb.domain.models.MovieCast
 import com.example.apiimdb.domain.models.MovieDetails
 import com.example.apiimdb.util.Resource
 
@@ -8,4 +9,6 @@ interface MoviesRepository { // Некий Interactor (Use Case) сможет и
     fun searchMovies(expression: String): Resource<List<Movie>>
 
     fun getMovieDetails(movieId: String): Resource<MovieDetails> // используем Response напрямую поскольку все поля, необходимые слою Domain, находятся непосредственно в теле ответа
+
+    fun getMovieCast(movieId: String): Resource<MovieCast> //
 }

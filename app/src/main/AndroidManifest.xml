@@ -25,6 +25,10 @@
             android:exported="false" />
 
         <activity
+            android:name=".ui.cast.MoviesCastActivity"
+            android:exported="true" />
+
+        <activity
             android:name=".ui.movies.MoviesActivity"
             android:exported="true">
             <intent-filter>
