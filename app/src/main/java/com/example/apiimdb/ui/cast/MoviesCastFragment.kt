@@ -1,60 +1,75 @@
 package com.example.apiimdb.ui.cast
 
-
-import android.content.Context
-import android.content.Intent
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.apiimdb.databinding.ActivityMoviesCastBinding
+import com.example.apiimdb.databinding.FragmentMoviesCastBinding
 import com.example.apiimdb.presentation.cast.MoviesCastState
 import com.example.apiimdb.presentation.cast.MoviesCastViewModel
 import com.hannesdorfmann.adapterdelegates4.ListDelegationAdapter
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
+import kotlin.getValue
 
-class MoviesCastActivity : AppCompatActivity() {
+class MoviesCastFragment : Fragment() {
 
     companion object {
         private const val ARGS_MOVIE_ID = "movie_id"
 
-        fun newInstance(context: Context, movieId: String): Intent { // метод newInstance, который будет возвращать нам корректно настроенный Intent для показа новой Activity
-            return Intent(context, MoviesCastActivity::class.java).apply {
-                putExtra(ARGS_MOVIE_ID,movieId)
+        // Тег для использования во FragmentManager
+        const val TAG = "MoviesCastFragment"
+
+        // Модифицировали метод newInstance — он должен возвращать фрагмент,
+        // а не Intent
+        fun newInstance(
+            movieId: String
+        ): Fragment { // метод newInstance, который будет возвращать нам корректно настроенный Intent для показа новой Activity
+            return MoviesCastFragment().apply {
+                arguments = bundleOf(
+                    ARGS_MOVIE_ID to movieId
+                )
             }
         }
     }
 
     // инжект ViewModel
     private val moviesCastViewModel: MoviesCastViewModel by viewModel {
-        parametersOf(intent.getStringExtra(ARGS_MOVIE_ID))
+        // параметр movieId берём из аргументов фрагмента, а не Intent
+       parametersOf(requireArguments().getString(ARGS_MOVIE_ID))
     }
 
-
-    // Добавили адаптер для RecyclerView
+    // Добавили адаптер для RecyclerView Делегат для нескольких вариантов отображения в ресвью
     private val adapterDelegates = MoviesCastAdapterDelegates()
     private val adapter = ListDelegationAdapter(
 
         adapterDelegates.movieCastHeaderDelegate(),
         adapterDelegates.movieCastPersonDelegate(),
     )
-    // До Адаптер ДЕЛЕГАТ
-    //private val adapter = MoviesCastAdapter() !!!!! Нужно только удалить ненужные более классы: MoviesCastHeaderViewHolder, MoviesCastViewHolder, MoviesCastAdapter. 
-    private lateinit var binding: ActivityMoviesCastBinding
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+    private lateinit var binding: FragmentMoviesCastBinding
 
-        binding = ActivityMoviesCastBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        binding = FragmentMoviesCastBinding.inflate(inflater, container, false)
+        return binding.root
+    }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
         // Привязываем адаптер и LayoutManager к RecyclerView
         binding.moviesCastRecyclerView.adapter = adapter
-        binding.moviesCastRecyclerView.layoutManager = LinearLayoutManager(this)
+        binding.moviesCastRecyclerView.layoutManager = LinearLayoutManager(requireContext())
 
-        moviesCastViewModel.observeState().observe(this) {
+        moviesCastViewModel.observeState().observe(viewLifecycleOwner) {
             // В зависимости от UiState экрана показываем
             // разные состояния экрана
             when(it) {
@@ -93,4 +108,5 @@ class MoviesCastActivity : AppCompatActivity() {
 
         adapter.notifyDataSetChanged()
     }
+
 }
