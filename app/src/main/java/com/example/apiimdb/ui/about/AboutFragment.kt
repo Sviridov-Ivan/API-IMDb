@@ -1,17 +1,19 @@
 package com.example.apiimdb.ui.about
 
+import com.example.apiimdb.R
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.commit
-import com.example.apiimdb.R
+import androidx.navigation.fragment.findNavController
 import com.example.apiimdb.databinding.FragmentAboutBinding
 import com.example.apiimdb.domain.models.MovieDetails
 import com.example.apiimdb.presentation.about.AboutState
 import com.example.apiimdb.presentation.about.AboutViewModel
 import com.example.apiimdb.ui.cast.MoviesCastFragment
+import com.example.apiimdb.ui.core.navigation.Router
+import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import org.koin.core.parameter.parametersOf
 
@@ -26,6 +28,9 @@ class AboutFragment : Fragment() {
             }
         }
     }
+
+    // Инжектируем роутер для навигации
+    private val router : Router by inject()
 
     private val aboutViewModel: AboutViewModel by viewModel {
         parametersOf(requireArguments().getString(MOVIE_ID))
@@ -53,17 +58,26 @@ class AboutFragment : Fragment() {
         }
 
         binding.showCastButton.setOnClickListener {
-            // Осуществляем навигацию
-            parentFragment?.parentFragmentManager?.commit {
-                replace(
-                    R.id.rootFragmentContainerView,
-                    MoviesCastFragment.newInstance(
-                        movieId = requireArguments().getString(MOVIE_ID).orEmpty()
-                    ),
-                    MoviesCastFragment.TAG
-                )
-                addToBackStack(MoviesCastFragment.TAG)
-            }
+
+            findNavController().navigate(R.id.action_detailsFragment_to_moviesCastFragment,
+            MoviesCastFragment.createArgs(requireArguments().getString(MOVIE_ID).orEmpty()))
+//            // Переходим на следующий экран с помощью Router
+//            router.openFragment(
+//                MoviesCastFragment.newInstance(
+//                    movieId = requireArguments().getString(MOVIE_ID).orEmpty()
+//                )
+//            )
+            // Осуществляем навигацию через FragmentManager до внедрения НАВИГАТОРА и РОУТЕРА
+//            parentFragment?.parentFragmentManager?.commit {
+//                replace(
+//                    R.id.rootFragmentContainerView,
+//                    MoviesCastFragment.newInstance(
+//                        movieId = requireArguments().getString(MOVIE_ID).orEmpty()
+//                    ),
+//                    MoviesCastFragment.TAG
+//                )
+//                addToBackStack(MoviesCastFragment.TAG)
+//            }
 
             // Переход на Активити - теперь на фрагмент
 //            startActivity(

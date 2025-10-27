@@ -1,7 +1,7 @@
 package com.example.apiimdb.presentation.cast
 
 import com.example.apiimdb.domain.models.MovieCastPerson
-import com.example.apiimdb.ui.RVItem
+import com.example.apiimdb.ui.core.RVItem
 
 sealed interface MoviesCastRVItem : RVItem {  // sealed, чтобы нам было проще приводить элементы списка к нужным типам данных
 

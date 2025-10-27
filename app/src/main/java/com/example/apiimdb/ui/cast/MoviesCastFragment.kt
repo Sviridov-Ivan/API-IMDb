@@ -21,20 +21,25 @@ class MoviesCastFragment : Fragment() {
     companion object {
         private const val ARGS_MOVIE_ID = "movie_id"
 
-        // Тег для использования во FragmentManager
-        const val TAG = "MoviesCastFragment"
+        fun createArgs(movieId: String): Bundle =
+            bundleOf(ARGS_MOVIE_ID to movieId)
 
-        // Модифицировали метод newInstance — он должен возвращать фрагмент,
-        // а не Intent
-        fun newInstance(
-            movieId: String
-        ): Fragment { // метод newInstance, который будет возвращать нам корректно настроенный Intent для показа новой Activity
-            return MoviesCastFragment().apply {
-                arguments = bundleOf(
-                    ARGS_MOVIE_ID to movieId
-                )
-            }
-        }
+
+        // С использованием Jetpack Navigation Component уже не нужно
+//        // Тег для использования во FragmentManager
+//        const val TAG = "MoviesCastFragment"
+//
+//        // Модифицировали метод newInstance — он должен возвращать фрагмент,
+//        // а не Intent
+//        fun newInstance(
+//            movieId: String
+//        ): Fragment { // метод newInstance, который будет возвращать нам корректно настроенный Intent для показа новой Activity
+//            return MoviesCastFragment().apply {
+//                arguments = bundleOf(
+//                    ARGS_MOVIE_ID to movieId
+//                )
+//            }
+//        }
     }
 
     // инжект ViewModel

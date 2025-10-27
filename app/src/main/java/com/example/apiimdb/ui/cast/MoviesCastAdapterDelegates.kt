@@ -5,7 +5,7 @@ import com.bumptech.glide.Glide
 import com.example.apiimdb.databinding.ListItemCastBinding
 import com.example.apiimdb.databinding.ListItemHeaderBinding
 import com.example.apiimdb.presentation.cast.MoviesCastRVItem
-import com.example.apiimdb.ui.RVItem
+import com.example.apiimdb.ui.core.RVItem
 import com.hannesdorfmann.adapterdelegates4.dsl.adapterDelegateViewBinding
 
 class MoviesCastAdapterDelegates {

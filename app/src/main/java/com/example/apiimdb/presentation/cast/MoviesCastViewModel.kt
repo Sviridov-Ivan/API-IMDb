@@ -5,7 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.apiimdb.domain.api.MoviesInteractor
 import com.example.apiimdb.domain.models.MovieCast
-import com.example.apiimdb.ui.RVItem
+import com.example.apiimdb.ui.core.RVItem
 
 
 // В конструктор пробросили необходимые для запроса параметры

@@ -5,24 +5,24 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.text.Editable
-
+import com.example.apiimdb.R
 import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.commit
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.apiimdb.R
-
 import com.example.apiimdb.databinding.FragmentMoviesBinding
 import com.example.apiimdb.domain.models.Movie
 import com.example.apiimdb.presentation.movies.MoviesState
 import com.example.apiimdb.presentation.movies.MoviesViewModel
 import com.example.apiimdb.ui.detalis.DetailsFragment
+import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import kotlin.getValue
+import com.example.apiimdb.ui.core.navigation.Router
 
 class MoviesFragment : Fragment() {
 
@@ -30,7 +30,10 @@ class MoviesFragment : Fragment() {
         private const val CLICK_DEBOUNCE_DELAY = 1000L
     }
 
-    private val viewModel: MoviesViewModel by viewModel()
+    // Инжектируем роутер для навигации
+    private val router: Router by inject()
+
+    private val viewModel: MoviesViewModel by viewModel<MoviesViewModel>()
 
     private val adapter = MoviesAdapter()
 
@@ -59,24 +62,34 @@ class MoviesFragment : Fragment() {
         binding.movies.adapter = adapter
 
         adapter.setOnClickListener { movie ->
-            if (clickDebounce()) {
+            if (clickDebounce()) { // навигация с помощью NavController
+                findNavController().navigate(R.id.action_moviesFragment_to_detailsFragment,
+                    DetailsFragment.createArgs(movie.id, movie.image))
 
-                // Навигируемся на следующий экран
-                parentFragmentManager.commit {
-                    replace(
-                        // Указали, в каком контейнере работаем
-                        R.id.rootFragmentContainerView,
-                        // Создали фрагмент
-                        DetailsFragment.newInstance(
-                            movieId = movie.id,
-                            posterUrl = movie.image
-                        ),
-                        // Указали тег фрагмента
-                        DetailsFragment.TAG
-                    )
-                    // Добавляем фрагмент в Back Stack
-                    addToBackStack(DetailsFragment.TAG)
-                }
+                // С использованием Jetpack Navigation Component уже не нужно
+                // Переходим на следующий экран с помощью РОУТЕРА
+//                router.openFragment(
+//                    DetailsFragment.newInstance(
+//                        movieId = movie.id,
+//                        posterUrl = movie.image
+//                    )
+//                )
+//                // Навигируемся на следующий экран до внедрения Роутера и Навигатора
+//                parentFragmentManager.commit {
+//                    replace(
+//                        // Указали, в каком контейнере работаем
+//                        R.id.rootFragmentContainerView,
+//                        // Создали фрагмент
+//                        DetailsFragment.newInstance(
+//                            movieId = movie.id,
+//                            posterUrl = movie.image
+//                        ),
+//                        // Указали тег фрагмента
+//                        DetailsFragment.TAG
+//                    )
+//                    // Добавляем фрагмент в Back Stack
+//                    addToBackStack(DetailsFragment.TAG)
+//                }
 
                 // когда было DetailsActivity
                 // Здесь пришлось поправить использование Context
