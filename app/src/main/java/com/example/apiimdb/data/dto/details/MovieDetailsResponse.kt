@@ -1,5 +1,6 @@
-package com.example.apiimdb.data.dto
+package com.example.apiimdb.data.dto.details
 
+import com.example.apiimdb.data.dto.Response
 import com.google.gson.annotations.SerializedName
 
 data class MovieDetailsResponse(

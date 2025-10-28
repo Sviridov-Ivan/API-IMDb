@@ -1,23 +1,24 @@
 package com.example.apiimdb.presentation.movies
 
 import android.app.Application
+import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
 import com.example.apiimdb.domain.api.MoviesInteractor
 import com.example.apiimdb.domain.models.Movie
 import com.example.apiimdb.R
+import com.example.apiimdb.presentation.SingleLiveEvent
 
 class MoviesViewModel(
-    application: Application,
+    private val context: Context,
     private val moviesInteractor: MoviesInteractor
-) : AndroidViewModel(application) {
+) : ViewModel() {
 
-
-    private val context = application.applicationContext
     private val stateLiveData = MutableLiveData<MoviesState>()
     fun observeState(): LiveData<MoviesState> = stateLiveData
 

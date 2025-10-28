@@ -1,8 +1,10 @@
 package com.example.apiimdb.di
 
 import com.example.apiimdb.data.MoviesRepositoryImpl
+import com.example.apiimdb.data.NamesRepositoryImpl
 import com.example.apiimdb.data.converter.MovieCastConverter
 import com.example.apiimdb.domain.api.MoviesRepository
+import com.example.apiimdb.domain.api.NamesRepository
 import org.koin.dsl.module
 
 val repositoryModule = module {
@@ -17,7 +19,8 @@ val repositoryModule = module {
         MoviesRepositoryImpl(get(),get())
     }
 
-//    single<SearchHistoryRepository> {
-//        SearchHistoryRepositoryImpl(get())
-//    } // не делал историю для этого проекта (но так в примере)
+    single<NamesRepository> {
+        NamesRepositoryImpl(get())
+    }
+
 }

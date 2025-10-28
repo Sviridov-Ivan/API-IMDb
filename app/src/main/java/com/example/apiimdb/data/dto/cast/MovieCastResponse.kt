@@ -1,4 +1,6 @@
-package com.example.apiimdb.data.dto
+package com.example.apiimdb.data.dto.cast
+
+import com.example.apiimdb.data.dto.Response
 
 class MovieCastResponse(
     val actors: List<ActorResponse>,

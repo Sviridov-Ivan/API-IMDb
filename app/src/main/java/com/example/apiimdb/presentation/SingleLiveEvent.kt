@@ -1,4 +1,4 @@
-package com.example.apiimdb.presentation.movies
+package com.example.apiimdb.presentation
 
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData

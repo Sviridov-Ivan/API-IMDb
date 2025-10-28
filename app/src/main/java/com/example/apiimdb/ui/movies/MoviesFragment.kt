@@ -183,5 +183,4 @@ class MoviesFragment : Fragment() {
         }
         return current
     }
-
 }

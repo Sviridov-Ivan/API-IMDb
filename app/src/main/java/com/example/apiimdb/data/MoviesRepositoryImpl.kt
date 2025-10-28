@@ -1,12 +1,12 @@
 package com.example.apiimdb.data
 
 import com.example.apiimdb.data.converter.MovieCastConverter
-import com.example.apiimdb.data.dto.MovieCastRequest
-import com.example.apiimdb.data.dto.MovieCastResponse
-import com.example.apiimdb.data.dto.MovieDetailsRequest
-import com.example.apiimdb.data.dto.MovieDetailsResponse
-import com.example.apiimdb.data.dto.MoviesSearchRequest
-import com.example.apiimdb.data.dto.MoviesSearchResponse
+import com.example.apiimdb.data.dto.cast.MovieCastRequest
+import com.example.apiimdb.data.dto.cast.MovieCastResponse
+import com.example.apiimdb.data.dto.details.MovieDetailsRequest
+import com.example.apiimdb.data.dto.details.MovieDetailsResponse
+import com.example.apiimdb.data.dto.movies.MoviesSearchRequest
+import com.example.apiimdb.data.dto.movies.MoviesSearchResponse
 import com.example.apiimdb.domain.api.MoviesRepository
 import com.example.apiimdb.domain.models.Movie
 import com.example.apiimdb.domain.models.MovieCast

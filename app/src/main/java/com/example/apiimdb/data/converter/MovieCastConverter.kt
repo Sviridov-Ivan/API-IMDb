@@ -1,11 +1,11 @@
 package com.example.apiimdb.data.converter
 
-import com.example.apiimdb.data.dto.ActorResponse
-import com.example.apiimdb.data.dto.CastItemResponse
-import com.example.apiimdb.data.dto.DirectorsResponse
-import com.example.apiimdb.data.dto.MovieCastResponse
-import com.example.apiimdb.data.dto.OtherResponse
-import com.example.apiimdb.data.dto.WritersResponse
+import com.example.apiimdb.data.dto.cast.ActorResponse
+import com.example.apiimdb.data.dto.cast.CastItemResponse
+import com.example.apiimdb.data.dto.cast.DirectorsResponse
+import com.example.apiimdb.data.dto.cast.MovieCastResponse
+import com.example.apiimdb.data.dto.cast.OtherResponse
+import com.example.apiimdb.data.dto.cast.WritersResponse
 import com.example.apiimdb.domain.models.MovieCast
 import com.example.apiimdb.domain.models.MovieCastPerson
 
