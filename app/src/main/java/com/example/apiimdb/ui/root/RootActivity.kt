@@ -7,7 +7,7 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.example.apiimdb.R
 import com.example.apiimdb.databinding.ActivityRootBinding
-import org.koin.core.qualifier._q
+
 
 
 class RootActivity : AppCompatActivity() {
@@ -49,6 +49,8 @@ class RootActivity : AppCompatActivity() {
                 }
             }
         }
+
+
         // С использованием Jetpack Navigation Component уже не нужно
 //        if (savedInstanceState == null) { //чтобы фрагмент не добавлялся при изменениях конфигурации
 //            // С помощью навигатора открываем первый экран
@@ -60,6 +62,10 @@ class RootActivity : AppCompatActivity() {
 ////                this.add(R.id.rootFragmentContainerView, MoviesFragment())
 ////            }
 //        }
+    }
+
+    fun animateBottomNavigationView() {
+        binding.bottomNavigationView.visibility = View.GONE
     }
 
     // С использованием Jetpack Navigation Component уже не нужно

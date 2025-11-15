@@ -2,7 +2,6 @@ package com.example.apiimdb.ui.movies
 
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.example.apiimdb.ui.movies.MovieViewHolder
 import com.example.apiimdb.domain.models.Movie
 
 //class MoviesAdapter(val clickListener: MovieClickListener) : RecyclerView.Adapter<MovieViewHolder>() { //добавил val clickListener: MovieClickListener для обработки нажатия на результат поиска в MoviesActivity
@@ -24,7 +23,7 @@ import com.example.apiimdb.domain.models.Movie
 //    }
 //}
 
-class MoviesAdapter : RecyclerView.Adapter<MovieViewHolder>() {
+class MoviesAdapter(private val onMovieClick: (Movie) -> Unit) : RecyclerView.Adapter<MovieViewHolder>() {
 
     var movies = ArrayList<Movie>()
     private var clickListener: ((Movie) -> Unit)? = null

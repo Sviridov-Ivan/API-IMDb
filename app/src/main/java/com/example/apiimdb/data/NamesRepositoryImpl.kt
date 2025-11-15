@@ -5,28 +5,53 @@ import com.example.apiimdb.data.dto.names.NamesSearchResponse
 import com.example.apiimdb.domain.api.NamesRepository
 import com.example.apiimdb.domain.models.Person
 import com.example.apiimdb.util.Resource
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 
 class NamesRepositoryImpl(private val networkClient: NetworkClient) : NamesRepository {
 
-    override fun searchNames(expression: String): Resource<List<Person>> {
-        val response = networkClient.doRequest(NamesSearchRequest(expression))
-        return when (response.resultCode) {
+    override fun searchNames(expression: String): Flow<Resource<List<Person>>> = flow {
+        val response = networkClient.doRequestSuspend(NamesSearchRequest(expression))
+        when (response.resultCode) {
             -1 -> {
-                Resource.Error("Проверьте подключение к интернету")
+                emit(Resource.Error("Проверьте подключение к интернету"))
             }
             200 -> {
-                with(response as NamesSearchResponse) {
-                    Resource.Success(results.map {
+               val namesResponse = response as NamesSearchResponse
+                    val data = namesResponse.results.map {
                         Person(id = it.id,
                             name = it.title,
                             description = it.description,
-                            photoUrl = it.image)
-                    })
+                            photoUrl = it.image
+                        )
+                    }
+                    emit(Resource.Success(data))
                 }
-            }
-            else -> {
-                Resource.Error("Ошибка сервера")
+                else -> {
+                    emit(Resource.Error("Ошибка сервера"))
             }
         }
     }
+
+//    override fun searchNames(expression: String): Resource<List<Person>> {
+//        val response = networkClient.doRequest(NamesSearchRequest(expression))
+//        return when (response.resultCode) {
+//            -1 -> {
+//                Resource.Error("Проверьте подключение к интернету")
+//            }
+//            200 -> {
+//                with(response as NamesSearchResponse) {
+//                    Resource.Success(results.map {
+//                        Person(id = it.id,
+//                            name = it.title,
+//                            description = it.description,
+//                            photoUrl = it.image)
+//                    })
+//                }
+//            }
+//            else -> {
+//                Resource.Error("Ошибка сервера")
+//            }
+//        }
+//    }
 }

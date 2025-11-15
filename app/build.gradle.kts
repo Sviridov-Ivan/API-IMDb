@@ -71,4 +71,7 @@ dependencies {
     implementation("androidx.navigation:navigation-ui-ktx:2.5.3")
     implementation("androidx.fragment:fragment-ktx:1.5.6")
 
+    // Корутины
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4")
+
 }

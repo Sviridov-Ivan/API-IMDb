@@ -3,8 +3,9 @@ package com.example.apiimdb.presentation.about
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.apiimdb.domain.api.MoviesInteractor
-import com.example.apiimdb.domain.models.MovieDetails
+import kotlinx.coroutines.launch
 
 class AboutViewModel(private val movieId: String, private val moviesInteractor: MoviesInteractor,) : ViewModel() {
 
@@ -12,15 +13,30 @@ class AboutViewModel(private val movieId: String, private val moviesInteractor: 
     fun observeState(): LiveData<AboutState> = stateLiveData
 
     init {
-        moviesInteractor.getMovieDetails(movieId, object : MoviesInteractor.MoviesDetailsConsumer {
+        loadMovieAbout()
+    }
 
-            override fun consume(movieDetails: MovieDetails?, errorMessage: String?) {
-                if (movieDetails != null) {
-                    stateLiveData.postValue(AboutState.Content(movieDetails))
-                } else {
-                    stateLiveData.postValue(AboutState.Error(errorMessage ?: "Unknoun error"))
+    private fun loadMovieAbout() {
+
+        viewModelScope.launch {
+            moviesInteractor.getMovieDetails(movieId)
+                .collect { (about, error) ->
+                    when {
+                        about != null -> {
+                            // about получен успешно → отдаём Content
+                            stateLiveData.postValue(AboutState.Content(about)
+                            )
+                        }
+                        error != null -> {
+                            // Ошибка с текстом → отдаём Error
+                            stateLiveData.postValue(AboutState.Error(error))
+                        }
+                        else -> {
+                            stateLiveData.postValue(AboutState.Error("Unknoun error")
+                            )
+                        }
+                    }
                 }
-            }
-        })
+        }
     }
 }

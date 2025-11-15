@@ -1,17 +1,17 @@
 package com.example.apiimdb.presentation.names
 
 import android.content.Context
-import android.os.Handler
-import android.os.Looper
-import android.os.SystemClock
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.apiimdb.R
 import com.example.apiimdb.domain.api.NamesInteractor
 import com.example.apiimdb.domain.models.Person
 import com.example.apiimdb.presentation.SingleLiveEvent
-
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 
 class NamesViewModel(
@@ -23,23 +23,17 @@ class NamesViewModel(
         private const val SEARCH_DEBOUNCE_DELAY = 2000L
         private val SEARCH_REQUEST_TOKEN = Any()
 
-//            fun getFactory(/*value: Int*/): ViewModelProvider.Factory = viewModelFactory { // фабрика, но сначала нужно создать класс мовис аппликейшн
-//                initializer {
-//                    val app = (this[APPLICATION_KEY] as MoviesApplication)
-//                    MoviesViewModel(app.applicationContext)
-//                }
-//            }
     }
 
-    private val handler = Handler(Looper.getMainLooper())
+    private var latestSearchText: String? = null
 
+    private var searchJob: Job? = null // cоздаём переменную searchJob типа Job, которую инициализируем значением null
     private val stateLiveData = MutableLiveData< NamesState>()
     fun observeState(): LiveData<NamesState> = stateLiveData
 
     private val showToast = SingleLiveEvent<String?>()
     fun observeStateToast(): LiveData<String?> = showToast
 
-    private var latestSearchText: String? = null
 
     fun searchDebounce(changedText: String) {
         if (latestSearchText == changedText) {
@@ -47,68 +41,62 @@ class NamesViewModel(
         }
 
         this.latestSearchText = changedText
-        handler.removeCallbacksAndMessages(SEARCH_REQUEST_TOKEN)
 
-        val searchRunnable = Runnable { searchRequest(changedText) }
-
-        val postTime = SystemClock.uptimeMillis() + SEARCH_DEBOUNCE_DELAY
-        handler.postAtTime(
-            searchRunnable,
-            SEARCH_REQUEST_TOKEN,
-            postTime,
-        )
+        searchJob?.cancel() // Отменяем текущее выполнение searchJob при помощи метода cancel()
+        searchJob = viewModelScope.launch { //Запускаем новую корутину (именно во viewModel) при помощи функции launch { }
+            delay(SEARCH_DEBOUNCE_DELAY) // suspend-функция delay()
+            searchRequest(changedText)
+        }
+        // Дебонс через Хандлер и implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4")
+//        handler.removeCallbacksAndMessages(SEARCH_REQUEST_TOKEN)
+//
+//        val searchRunnable = implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4") { searchRequest(changedText) }
+//
+//        val postTime = SystemClock.uptimeMillis() + SEARCH_DEBOUNCE_DELAY
+//        handler.postAtTime(
+//            searchRunnable,
+//            SEARCH_REQUEST_TOKEN,
+//            postTime,
+//        )
     }
 
     private fun searchRequest(newSearchText: String) {
         if (newSearchText.isNotEmpty()) {
+
             renderState(NamesState.Loading)
 
-            namesInteractor.searchNames(newSearchText, object : NamesInteractor.NamesConsumer {
-                override fun consume(foundNames: List<Person>?, errorMessage: String?) {
-                    val persons = mutableListOf<Person>()
-                    if (foundNames != null) {
-                        persons.addAll(foundNames)
+            viewModelScope.launch {
+                namesInteractor
+                    .searchNames(newSearchText)
+                    .collect { pair ->
+                        processResult(pair.first, pair.second)
                     }
+            }
+        }
+    }
 
-                    when {
-                        errorMessage != null -> {
-                            renderState(
-                                NamesState.Error(
-                                    message = context.getString(
-                                        R.string.something_went_wrong),
-                                )
-                            )
-                            showToast.postValue(errorMessage)
-                        }
+    private fun processResult(foundNames: List<Person>?, errorMessage: String?) {
+        val persons = mutableListOf<Person>()
+        if (foundNames != null) {
+            persons.addAll(foundNames)
+        }
 
-                        persons.isEmpty() -> {
-                            renderState(
-                                NamesState.Empty(
-                                    message = context.getString(R.string.nothing_found),
-                                )
-                            )
-                        }
-
-                        else -> {
-                            renderState(
-                                NamesState.Content(
-                                    persons = persons,
-                                )
-                            )
-                        }
-                    }
-
-                }
-            })
+        when {
+            errorMessage != null -> {
+                renderState(NamesState.Error(message = context.getString(
+                    R.string.something_went_wrong)))
+                showToast.postValue(errorMessage)
+            }
+            persons.isEmpty() -> {
+                renderState(NamesState.Empty(message = context.getString(R.string.nothing_found)))
+            }
+            else -> {
+                renderState(NamesState.Content(persons = persons))
+            }
         }
     }
 
     private fun renderState(state: NamesState) {
         stateLiveData.postValue(state)
     }
-
-//override fun onCleared() {
-//        super.onCleared()
-//        handler.removeCallbacksAndMessages(SEARCH_REQUEST_TOKEN)
-//    }
 }

@@ -12,6 +12,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.apiimdb.databinding.FragmentMoviesBinding
@@ -23,6 +24,11 @@ import org.koin.android.ext.android.inject
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import kotlin.getValue
 import com.example.apiimdb.ui.core.navigation.Router
+import com.example.apiimdb.ui.root.RootActivity
+import com.example.apiimdb.util.debounce
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+
 
 class MoviesFragment : Fragment() {
 
@@ -35,7 +41,8 @@ class MoviesFragment : Fragment() {
 
     private val viewModel: MoviesViewModel by viewModel<MoviesViewModel>()
 
-    private val adapter = MoviesAdapter()
+    //private val adapter = MoviesAdapter() // изменил из-за реализации перехода анимации
+    private var adapter: MoviesAdapter? = null
 
     private var isClickAllowed = true
 
@@ -44,6 +51,8 @@ class MoviesFragment : Fragment() {
     private var textWatcher: TextWatcher? = null
 
     private lateinit var binding: FragmentMoviesBinding
+
+    private lateinit var onMovieClickDebounce: (Movie) -> Unit // это ссылка на вторую функцию, которую будет возвращать debounce()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -57,14 +66,28 @@ class MoviesFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // Реализация задержки появления экрана при переходе на другой фрагмент через функцию Debounce и корутины
+        onMovieClickDebounce = debounce<Movie>(CLICK_DEBOUNCE_DELAY, viewLifecycleOwner.lifecycleScope, false) { movie ->
+            findNavController().navigate(R.id.action_moviesFragment_to_detailsFragment,
+                DetailsFragment.createArgs(movie.id, movie.image))
+        }
+
+        adapter = MoviesAdapter { movie ->
+            (activity as RootActivity).animateBottomNavigationView()
+            onMovieClickDebounce(movie)
+        }
         // Здесь пришлось поправить использование Context
         binding.movies.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
         binding.movies.adapter = adapter
 
-        adapter.setOnClickListener { movie ->
-            if (clickDebounce()) { // навигация с помощью NavController
-                findNavController().navigate(R.id.action_moviesFragment_to_detailsFragment,
-                    DetailsFragment.createArgs(movie.id, movie.image))
+
+        adapter?.setOnClickListener { movie ->
+            onMovieClickDebounce(movie)
+
+            // До использования реализации // Реализация задержки появления...
+//            if (clickDebounce()) { // навигация с помощью NavController
+//                findNavController().navigate(R.id.action_moviesFragment_to_detailsFragment,
+//                    DetailsFragment.createArgs(movie.id, movie.image))
 
                 // С использованием Jetpack Navigation Component уже не нужно
                 // Переходим на следующий экран с помощью РОУТЕРА
@@ -97,7 +120,7 @@ class MoviesFragment : Fragment() {
 //                intent.putExtra("id", movie.id) // 🔹 тот же ключ, что и в DetailsActivity
 //                intent.putExtra("poster", movie.image)
 //                startActivity(intent)
-            }
+            //}
         }
 
         // Здесь пришлось заменить LifecycleOwner на ViewLifecycleOwner
@@ -131,6 +154,8 @@ class MoviesFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        adapter = null
+        binding.movies.adapter = null //?
         textWatcher?.let { binding.queryInput.removeTextChangedListener(it) }
     }
 
@@ -170,16 +195,21 @@ class MoviesFragment : Fragment() {
             placeholderMessage.visibility = View.GONE
             progressBar.visibility = View.GONE
         }
-        adapter.movies.clear()
-        adapter.movies.addAll(moviesList)
-        adapter.notifyDataSetChanged()
+        adapter?.movies?.clear()
+        adapter?.movies?.addAll(moviesList)
+        adapter?.notifyDataSetChanged()
     }
 
     private fun clickDebounce() : Boolean {
         val current = isClickAllowed
         if (isClickAllowed) {
             isClickAllowed = false
-            handler.postDelayed({ isClickAllowed = true },CLICK_DEBOUNCE_DELAY)
+
+            viewLifecycleOwner.lifecycleScope.launch { // запуск корутины именно во фрагменте
+                delay(CLICK_DEBOUNCE_DELAY)
+                isClickAllowed = true
+            }
+            //handler.postDelayed({ isClickAllowed = true },CLICK_DEBOUNCE_DELAY) // использовал handler.postDelayed до Корутин
         }
         return current
     }

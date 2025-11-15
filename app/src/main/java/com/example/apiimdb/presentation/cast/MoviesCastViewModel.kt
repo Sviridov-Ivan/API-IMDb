@@ -3,9 +3,11 @@ package com.example.apiimdb.presentation.cast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.apiimdb.domain.api.MoviesInteractor
 import com.example.apiimdb.domain.models.MovieCast
 import com.example.apiimdb.ui.core.RVItem
+import kotlinx.coroutines.launch
 
 
 // В конструктор пробросили необходимые для запроса параметры
@@ -18,24 +20,32 @@ class MoviesCastViewModel(
     fun observeState(): LiveData<MoviesCastState> = stateLiveData
 
     init {
+        loadMovieCast()
+    }
+
+    private fun loadMovieCast() {
         // При старте экрана покажем  ProgressBar
         stateLiveData.postValue(MoviesCastState.Loading)
 
-        // Выполняем сетевой запрос
-        moviesInteractor.getMovieCast(movieId, object : MoviesInteractor.MoviesCastConsumer {
-            // Обрабатываем результат этого запроса
-            override fun consume(movieCast: MovieCast?, errorMessage: String?) {
-                if (movieCast != null) {
-                    // добавляем конвертацию в UiState
-                    stateLiveData.postValue(castToUiStateContent(movieCast))
-                } else {
-                    stateLiveData.postValue(MoviesCastState.Error(errorMessage ?: "Unknown error"))
+        viewModelScope.launch { // запускаем новый поток при помощи корутин
+            moviesInteractor.getMovieCast(movieId)
+                .collect { (cast, error) ->
+                    when {
+                        cast != null -> {
+                            stateLiveData.postValue(castToUiStateContent(cast)
+                            )
+                        }
+                        error != null -> {
+                            stateLiveData.postValue(MoviesCastState.Error(error)
+                            )
+                        }
+                        else -> {
+                            stateLiveData.postValue(MoviesCastState.Error("Unknown error"))
+                        }
+                    }
                 }
-            }
-
-        })
+        }
     }
-
     private fun castToUiStateContent(cast: MovieCast): MoviesCastState {
         // Строим список элементов RecyclerView
         val items = buildList<MoviesCastRVItem> {
