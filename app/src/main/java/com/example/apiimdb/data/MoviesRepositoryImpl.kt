@@ -1,6 +1,8 @@
 package com.example.apiimdb.data
 
 import com.example.apiimdb.data.converter.MovieCastConverter
+import com.example.apiimdb.data.converters.MovieDbConvertor
+import com.example.apiimdb.data.db.AppDatabase
 import com.example.apiimdb.data.dto.cast.MovieCastRequest
 import com.example.apiimdb.data.dto.cast.MovieCastResponse
 import com.example.apiimdb.data.dto.details.MovieDetailsRequest
@@ -15,9 +17,14 @@ import com.example.apiimdb.domain.models.MovieDetails
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
-class MoviesRepositoryImpl(private val networkClient: NetworkClient,
+class MoviesRepositoryImpl(
+    private val networkClient: NetworkClient,
                            // Добавили конвертер
-                           private val movieCastConverter: MovieCastConverter,
+    private val movieCastConverter: MovieCastConverter,
+    // зависимости для баз данных
+    private val appDatabase: AppDatabase,
+    private val movieDbConvertor: MovieDbConvertor
+
     ) : MoviesRepository { // В конструктор класса передаётся сетевой клиент, и конкретная реализация будет уточняться при инициализации. суффикс Impl — сокращение от Implementation — реализация
 
     override fun searchMovies(expression: String): Flow<Resource<List<Movie>>> = flow { // выполняем запрос, передав в соответствующий метод сетевого клиента экземпляр класса MoviesSearchRequest с текстом поискового запроса
@@ -32,6 +39,8 @@ class MoviesRepositoryImpl(private val networkClient: NetworkClient,
                 val data = movieResponse.results.map {
                     Movie(it.id, it.resultType, it.image, it.title, it.description)
                 }
+                // Сохраняем список фильмов в базу данных
+                saveMovie(data) // ЧТО ЗАПУЛИТЬ В АРГУМЕНТЫ!!! ПОДСКАЖИ ПОЖАЛУЙСТА
                 emit(Resource.Success(data))
             }
             else -> {
@@ -92,5 +101,11 @@ class MoviesRepositoryImpl(private val networkClient: NetworkClient,
                 emit(Resource.Error("Ошибка сервера"))
             }
         }
+    }
+
+    // Конвертируем данные из сетевой модели в модель базы данных и сохраняем
+    private suspend fun saveMovie(movies: List<Movie>) { // преобразует данные из сетевой модели в модель базы данных и сохраняет её в базу. Также это suspend, что позволяет нам работать с ним асинхронно
+        val movieEntities = movies.map { movie -> movieDbConvertor.map(movie)}
+        appDatabase.movieDao().insertMovies(movieEntities)
     }
 }

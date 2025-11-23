@@ -1,7 +1,9 @@
 package com.example.apiimdb.di
 
 import android.content.Context
+import androidx.room.Room
 import com.example.apiimdb.data.NetworkClient
+import com.example.apiimdb.data.db.AppDatabase
 import com.example.apiimdb.data.local.SharedPreferencesSearchHistoryStorage
 import com.example.apiimdb.data.network.IMDbApiService
 import com.example.apiimdb.data.network.RetrofitNetworkClient
@@ -37,5 +39,9 @@ val dataModule = module {
         RetrofitNetworkClient(get(), androidContext())
     }
 
+    single { // инициализацию базы данных
+        Room.databaseBuilder(androidContext(), AppDatabase::class.java, "database.db") //единственный экземпляр объекта, который создаёт экземпляр класса RoomDatabase и связывает его с именем базы данных database.db
+            .build()
+    }
 
 }
